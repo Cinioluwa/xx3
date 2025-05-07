@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dora's Spectacular Birthday!</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Dancing+Script:wght@700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #06000a;
+      color: #fff;
+      overflow-x: hidden;
+    }
+    
+    .noise {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      opacity: 0.05;
+      pointer-events: none;
+      z-index: 1000;
+    }
+    
+    .section {
+      min-height: 100vh;
+      position: relative;
+      padding: 2rem;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    #hero {
+      background: linear-gradient(135deg, #7928ca, #ff0080);
+      position: relative;
+    }
+    
+    .hero-content {
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    
+    h1 {
+      font-size: 5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, #fff, #ffd6ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      position: relative;
+    }
+    
+    .title-accent {
+      font-family: 'Dancing Script', cursive;
+      font-size: 2.5rem;
+      color: #ffcc00;
+      display: block;
+      text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+    }
+    
+    .subtitle {
+      font-size: 1.5rem;
+      font-weight: 300;
+      margin-bottom: 2rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .name-highlight {
+      font-weight: 700;
+      color: #ffcc00;
+      position: relative;
+      display: inline-block;
+    }
+    
+    .name-highlight:after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: #ffcc00;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.5s ease;
+    }
+    
+    .name-highlight:hover:after {
+      transform: scaleX(1);
+    }
+    
+    .confetti-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #ffcc00;
+      border-radius: 50%;
+    }
+    
+    #canvas-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+    
+    .birthday-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      max-width: 800px;
+      width: 100%;
+      margin: 2rem auto;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .birthday-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .birthday-card:before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      opacity: 0;
+      transform: rotate(0deg);
+      transition: opacity 0.5s ease, transform 5s linear;
+      pointer-events: none;
+    }
+    
+    .birthday-card:hover:before {
+      opacity: 1;
+      transform: rotate(180deg);
+    }
+    
+    .card-title {
+      font-size: 2rem;
+      color: #ffcc00;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+    }
+    
+    .glitch-effect {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .glitch-effect:before, .glitch-effect:after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.8;
+    }
+    
+    .glitch-effect:before {
+      color: #ff00ff;
+      z-index: -1;
+      animation: glitch-animation 0.5s infinite;
+      clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+      transform: translate(-2px, -2px);
+    }
+    
+    .glitch-effect:after {
+      color: #00ffff;
+      z-index: -2;
+      animation: glitch-animation 0.5s infinite reverse;
+      clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
+      transform: translate(2px, 2px);
+    }
+    
+    @keyframes glitch-animation {
+      0% { transform: translate(0); }
+      20% { transform: translate(-3px, 3px); }
+      40% { transform: translate(-3px, -3px); }
+      60% { transform: translate(3px, 3px); }
+      80% { transform: translate(3px, -3px); }
+      100% { transform: translate(0); }
+    }
+    
+    .poem {
+      font-style: italic;
+      line-height: 1.8;
+      margin-bottom: 2rem;
+      text-align: left;
+      position: relative;
+      padding-left: 2rem;
+      border-left: 3px solid #ff0080;
+    }
+    
+    .fun-fact {
+      background: rgba(255, 204, 0, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+    
+    .fun-fact:hover {
+      transform: scale(1.03);
+    }
+    
+    .fun-fact:before {
+      content: '✨';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      font-size: 2rem;
+    }
+    
+    #gallery {
+      background: linear-gradient(135deg, #06000a, #200035);
+    }
+    
+    .gallery-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1000px;
+    }
+    
+    .gallery-item {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      height: 0;
+      padding-bottom: 100%;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .gallery-item:hover {
+      transform: scale(1.05) rotate(2deg);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      z-index: 2;
+    }
+    
+    .gallery-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.8);
+      transition: filter 0.3s ease;
+    }
+    
+    .gallery-item:hover .gallery-img {
+      filter: brightness(1);
+    }
+    
+    .gallery-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+      color: #fff;
+      font-size: 0.9rem;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .gallery-item:hover .gallery-caption {
+      transform: translateY(0);
+    }
+    
+    #messages {
+      background: linear-gradient(135deg, #200035, #06000a);
+    }
+    
+    .message-board {
+      max-width: 800px;
+      width: 100%;
+    }
+    
+    .message {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+    
+    .message:hover {
+      transform: translateX(10px);
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .message-text {
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+    
+    .message-author {
+      font-weight: 600;
+      color: #ffcc00;
+      margin-top: 1rem;
+      text-align: right;
+    }
+    
+    .emoji-rain {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+      display: none;
+    }
+    
+    .emoji {
+      position: absolute;
+      font-size: 30px;
+      user-select: none;
+      will-change: transform;
+    }
+    
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 3rem;
+      }
+      
+      .title-accent {
+        font-size: 1.8rem;
+      }
+      
+      .subtitle {
+        font-size: 1.2rem;
+      }
+    }
+    
+    .footer {
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.6);
+      background: #06000a;
+    }
+    
+    .heart {
+      color: #ff0080;
+      display: inline-block;
+      animation: heartbeat 1.5s infinite;
+    }
+    
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+    
+    .cursor-glow {
+      position: fixed;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 204, 0, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .secret-message {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #ffcc00;
+      color: #06000a;
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-weight: 600;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      cursor: pointer;
+      z-index: 1000;
+    }
+    
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .modal.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    .modal-content {
+      background: linear-gradient(135deg, #7928ca, #ff0080);
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      position: relative;
+      transform: translateY(50px);
+      opacity: 0;
+      transition: all 0.5s ease;
+    }
+    
+    .modal.active .modal-content {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 1.5rem;
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+    }
+    
+    .typing-effect {
+      border-right: 3px solid #ffcc00;
+      white-space: nowrap;
+      overflow: hidden;
+      margin: 0 auto;
+      animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+    }
+    
+    @keyframes typing {
+      from { width: 0 }
+      to { width: 100% }
+    }
+    
+    @keyframes blink-caret {
+      from, to { border-color: transparent }
+      50% { border-color: #ffcc00 }
+    }
+
+    .firefly {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: #ffcc00;
+      border-radius: 50%;
+      box-shadow: 0 0 10px 2px rgba(255, 204, 0, 0.8);
+      will-change: transform;
+    }
+
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+    }
+
+    #loading-image {
+      width: 150px;
+      animation: bounce 1.5s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-screen">
+    <img src="Dora.png" alt="Dora the Explorer" id="loading-image">
+    <p>Welcome to Dora's Spectacular Birthday!</p>
+  </div>
+
+  <div class="noise"></div>
+  <div class="cursor-glow" id="cursor-glow"></div>
+  
+  <section id="hero" class="section">
+    <canvas id="canvas-background"></canvas>
+    <div class="confetti-container" id="confetti-container"></div>
+    
+    <div class="hero-content">
+      <span class="title-accent">Celebrating</span>
+      <h1 class="glitch-effect" data-text="HAPPY BIRTHDAY">HAPPY BIRTHDAY</h1>
+      <h2 class="subtitle">To the incredible <span class="name-highlight">Dora</span>!</h2>
+      <div class="birthday-card">
+        <h3 class="card-title">AKA <span class="glitch-effect" data-text="Obinglabo">Obinglabo</span> • Dora the Explorer • Isidora Obeahon</h3>
+        <div class="poem">
+          Dora, dear explorer of life's great terrain,<br />
+          Through bugs and pixels, you boldly campaign.<br />
+          You style up the web and brighten the skies,<br />
+          With code in your hand and stars in your eyes.<br /><br />
+          Obinglabo, a name of delight,<br />
+          You make every Monday feel just right.<br />
+          So here's to your journey, adventures galore—<br />
+          Let joy and good vibes knock on your door! 💖
+        </div>
+        <div class="fun-fact">
+          <h4>🌟 Fun Fact:</h4>
+          <p>She debugs CSS and broken hearts with the same grace. Might also be made of sunshine and sass. Proceed with awe. ✨</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <section id="gallery" class="section">
+    <h2 class="card-title">📸 Memory Gallery</h2>
+    <div class="gallery-container">
+      <div class="gallery-item">
+        <img class="gallery-img" src="1.jpg" alt="Dora at the beach">
+        <div class="gallery-caption">She's overused this dress tbh</div>
+      </div>
+      <div class="gallery-item">
+        <img class="gallery-img" src="2.jpg" alt="Dora coding">
+        <div class="gallery-caption">Open your eyes when taking pictures please!</div>
+      </div>
+      <div class="gallery-item">
+        <img class="gallery-img" src="3.jpg" alt="Dora at conference">
+        <div class="gallery-caption">She really likes the cross necklace</div>
+      </div>
+      <div class="gallery-item">
+        <img class="gallery-img" src="4.jpg" alt="Dora celebrating">
+        <div class="gallery-caption">Oh and the headgear too</div>
+      </div>
+      <div class="gallery-item">
+        <img class="gallery-img" src="5.jpg" alt="Dora laughing">
+        <div class="gallery-caption">Looks like an anime character</div>
+      </div>
+      <div class="gallery-item">
+        <img class="gallery-img" src="6.jpg" alt="Dora with friends">
+        <div class="gallery-caption">Moon emoji🌚</div>
+      </div>
+      <div class="gallery-item">
+        <img class="gallery-img" src="7.jpg" alt="Dora exploring">
+        <div class="gallery-caption">🌈</div>
+      </div>
+      <div class="gallery-item">
+        <img class="gallery-img" src="8.jpg" alt="Dora enjoying nature">
+        <div class="gallery-caption">She looks older in her older pictures</div>
+      </div>
+      <div class="gallery-item">
+        <img class="gallery-img" src="9.jpg" alt="Dora at a workshop">
+        <div class="gallery-caption">Jasperidotian</div>
+      </div>
+      <div class="gallery-item">
+        <img class="gallery-img" src="10.jpg" alt="Dora with a pet">
+        <div class="gallery-caption">I don't🫠</div>
+      </div>
+      <div class="gallery-item">
+        <img class="gallery-img" src="11.jpg" alt="Dora at a party">
+        <div class="gallery-caption">She uses snap?</div>
+      </div>
+      <div class="gallery-item">
+        <img class="gallery-img" src="12.jpg" alt="Dora's candid moment">
+        <div class="gallery-caption">✨</div>
+      </div>
+    </div>
+  </section>
+  
+  <section id="messages" class="section">
+    <h2 class="card-title">Moments</h2>
+    <div class="message-board">
+      <div class="message">
+        <p class="message-text">"The only one who keeps losing to me at scrabble and keeps trying"</p>
+        <p class="message-author">- Cinioluwa</p>
+      </div>
+      <div class="message">
+        <p class="message-text">"Drags people to places they would rather have slept"</p>
+        <p class="message-author">- Gloria</p>
+      </div>
+      <div class="message">
+        <p class="message-text">"Happy buyday Obiora"</p>
+        <p class="message-author">- Mr Adegbami</p>
+      </div>
+    </div>
+  </section>
+  
+  <div class="emoji-rain" id="emoji-rain"></div>
+  
+  <div class="secret-message" id="secret-message">🔓 Secret Message</div>
+  
+  <div class="modal" id="secret-modal">
+    <div class="modal-content">
+      <button class="close-modal" id="close-modal">✕</button>
+      <h3 class="card-title">A Message From The Heart</h3>
+      <p class="typing-effect" id="typing-message">Loading special message...</p>
+    </div>
+  </div>
+  
+  <footer class="footer">
+    Made with <span class="heart">❤</span> for Dora | Happy Birthday 2025!
+  </footer>
+
+  <script>
+    // Document ready function
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize background
+      createBackground();
+      
+      // Create initial confetti
+      createConfetti();
+      
+      // Initialize scroll animations
+      initScrollAnimations();
+      
+      // Initialize cursor glow effect
+      initCursorGlow();
+      
+      // Initialize modal functionality
+      initModal();
+      
+      // Add fireflies
+      addFireflies();
+      
+      // Initialize GSAP animations for page elements
+      gsap.from('h1', {
+        opacity: 0,
+        y: -50,
+        duration: 1,
+        ease: 'power3.out',
+        delay: 0.5
+      });
+      
+      gsap.from('.subtitle', {
+        opacity: 0,
+        y: -20,
+        duration: 1,
+        ease: 'power3.out',
+        delay: 0.8
+      });
+      
+      gsap.from('.birthday-card', {
+        opacity: 0,
+        y: 50,
+        duration: 1.5,
+        ease: 'elastic.out(1, 0.3)',
+        delay: 1.2
+      });
+      
+      // Apply glitch effect periodically
+      setInterval(() => {
+        const glitchElements = document.querySelectorAll('.glitch-effect');
+        glitchElements.forEach(el => {
+          el.classList.add('active');
+          setTimeout(() => el.classList.remove('active'), 500);
+        });
+      }, 5000);
+      
+      // Make gallery images interactive
+      document.querySelectorAll('.gallery-item').forEach(item => {
+        item.addEventListener('click', () => {
+          gsap.to(item, {
+            rotation: Math.random() * 8 - 4,
+            scale: 1.1,
+            duration: 0.5,
+            ease: 'power1.out',
+            onComplete: () => {
+              gsap.to(item, {
+                rotation: 0,
+                scale: 1,
+                duration: 0.5,
+                delay: 0.5
+              });
+            }
+          });
+        });
+      });
+
+      const loadingScreen = document.getElementById('loading-screen');
+
+      // Simulate loading time (e.g., 3 seconds)
+      setTimeout(() => {
+        loadingScreen.style.display = 'none';
+      }, 3000);
+    });
+    // Add fireflies to the background
+    const addFireflies = () => {
+      const sections = document.querySelectorAll('.section');
+      
+      sections.forEach(section => {
+        const numFireflies = 20;
+        
+        for (let i = 0; i < numFireflies; i++) {
+          const firefly = document.createElement('div');
+          firefly.classList.add('firefly');
+          
+          // Random position
+          const xPos = Math.random() * 100;
+          const yPos = Math.random() * 100;
+          
+          firefly.style.left = xPos + '%';
+          firefly.style.top = yPos + '%';
+          
+          // Animate firefly
+          gsap.to(firefly, {
+            x: (Math.random() - 0.5) * 200,
+            y: (Math.random() - 0.5) * 200,
+            opacity: Math.random(),
+            duration: Math.random() * 10 + 5,
+            ease: 'sine.inOut',
+            repeat: -1,
+            yoyo: true,
+            delay: Math.random() * 5
+          });
+          
+          section.appendChild(firefly);
+        }
+      });
+    };
+    
+    // Secret message typing effect
+    const typeMessage = (element, message, speed = 50) => {
+      let i = 0;
+      element.textContent = '';
+      
+      function typing() {
+        if (i < message.length) {
+          element.textContent += message.charAt(i);
+          i++;
+          setTimeout(typing, speed);
+        }
+      }
+      
+      typing();
+    };
+    
+    // Initialize cursor glow effect
+    const initCursorGlow = () => {
+      const cursorGlow = document.getElementById('cursor-glow');
+      
+      document.addEventListener('mousemove', (e) => {
+        cursorGlow.style.opacity = '1';
+        cursorGlow.style.left = e.clientX + 'px';
+        cursorGlow.style.top = e.clientY + 'px';
+      });
+      
+      document.addEventListener('mouseout', () => {
+        cursorGlow.style.opacity = '0';
+      });
+    };
+    
+    // Initialize scroll animations
+    const initScrollAnimations = () => {
+      gsap.registerPlugin(ScrollTrigger);
+      
+      // Hero animations
+      gsap.from('.hero-content', {
+        opacity: 0,
+        y: 100,
+        duration: 1.5,
+        ease: 'power3.out'
+      });
+      
+      // Gallery animations
+      gsap.from('.gallery-item', {
+        scrollTrigger: {
+          trigger: '#gallery',
+          start: 'top 80%'
+        },
+        opacity: 0,
+        y: 50,
+        stagger: 0.2,
+        duration: 1,
+        ease: 'power2.out'
+      });
+      
+      // Message animations
+      gsap.from('.message', {
+        scrollTrigger: {
+          trigger: '#messages',
+          start: 'top 80%'
+        },
+        opacity: 0,
+        x: -50,
+        stagger: 0.3,
+        duration: 1,
+        ease: 'power2.out'
+      });
+    };
+    
+    // Modal functionality
+    const initModal = () => {
+      const secretBtn = document.getElementById('secret-message');
+      const modal = document.getElementById('secret-modal');
+      const closeBtn = document.getElementById('close-modal');
+      const typingMessage = document.getElementById('typing-message');
+      
+      const secretMessages = [
+        "Even when it feels like we don't appreciate you, we actually do! Keep being amazing",
+      ];
+      
+      secretBtn.addEventListener('click', () => {
+        modal.classList.add('active');
+        const randomMessage = secretMessages[Math.floor(Math.random() * secretMessages.length)];
+        typeMessage(typingMessage, randomMessage, 30);
+      });
+      
+      closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+      });
+      
+      // Close modal when clicking outside content
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+        }
+      });
+    };
+    
+    // Initialize Three.js background
+    const createBackground = () => {
+      const canvas = document.getElementById('canvas-background');
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+      
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      
+      // Create stars
+      const starsGeometry = new THREE.BufferGeometry();
+      const starsMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 2,
+        transparent: true
+      });
+      
+      const starsVertices = [];
+      for (let i = 0; i < 1000; i++) {
+        const x = (Math.random() - 0.5) * 2000;
+        const y = (Math.random() - 0.5) * 2000;
+        const z = (Math.random() - 0.5) * 2000;
+        starsVertices.push(x, y, z);
+      }
+      
+      starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+      const stars = new THREE.Points(starsGeometry, starsMaterial);
+      scene.add(stars);
+      
+      camera.position.z = 500;
+      
+      // Animation loop
+      const animate = () => {
+        requestAnimationFrame(animate);
+        stars.rotation.x += 0.0005;
+        stars.rotation.y += 0.0005;
+        renderer.render(scene, camera);
+      };
+      
+      // Handle window resize
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+      
+      animate();
+    };
+    
+    // Create confetti effect
+    const createConfetti = () => {
+      const container = document.getElementById('confetti-container');
+      const colors = ['#ff0080', '#7928ca', '#ffcc00', '#00ffff', '#ff00ff'];
+      
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.top = -Math.random() * 20 + '%';
+        confetti.style.opacity = Math.random() * 0.8 + 0.2;
+        confetti.style.transform = `scale(${Math.random() * 0.6 + 0.4})`;
+        
+        container.appendChild(confetti);
+        
+        // Animate confetti
+        gsap.to(confetti, {
+          y: window.innerHeight + 100,
+          x: (Math.random() - 0.5) * 200,
+          rotation: Math.random() * 360,
+          duration: Math.random() * 3 + 3,
+          ease: 'power1.out',
+          repeat: -1,
+          delay: Math.random() * 5,
+          onComplete: () => {
+            confetti.style.top = -Math.random() * 20 + '%';
+            confetti.style.left = Math.random() * 100 + '%';
+          }
+        });
+      }
+    };
+    
+    // Create emoji rain
+    const activateEmojiRain = () => {
+      const emojiRain = document.getElementById('emoji-rain');
+      emojiRain.style.display = 'block';
+      
+      const emojis = ['🎉', '🎂', '🎁', '🎈', '✨', '💖', '🥂', '🍰', '🎊', '💫', '👑'];
+      const totalEmojis = 100;
+      
+      // Clear previous emojis
+      emojiRain.innerHTML = '';
+      
+      // Create new emojis
+      for (let i = 0; i < totalEmojis; i++) {
+        const emoji = document.createElement('div');
+        emoji.classList.add('emoji');
+        emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        emoji.style.left = Math.random() * 100 + 'vw';
+        emoji.style.animationDuration = Math.random() * 3 + 2 + 's';
+        emoji.style.opacity = Math.random() * 0.8 + 0.2;
+        emojiRain.appendChild(emoji);
+        
+        // Animate emoji falling
+        gsap.fromTo(emoji, 
+          { y: -100, x: 0, rotation: 0 },
+          { 
+            y: window.innerHeight + 100, 
+            x: (Math.random() - 0.5) * 200,
+            rotation: Math.random() * 360,
+            duration: Math.random() * 5 + 3,
+            ease: 'power1.out',
+            onComplete: () => emoji.remove()
+          }
+        );
+      }
+      
+      // Add vibration effect to the page
+      gsap.to('body', {
+        x: '+=5',
+        yoyo: true,
+        repeat: 10,
+        duration: 0.05,
+        ease: 'power1.inOut'
+      });
+      
+      // Play celebratory sound
+      const sound = new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABMYXZjNTkuMzcuMTAwAABJTkZPAAAAAAAAAAAA');
+      sound.play().catch(e => console.log('Audio play failed:', e));
+      
+      // Change page colors temporarily
+      gsap.to(['.section, body'], {
+        background: 'linear-gradient(135deg, #ff0080, #7928ca)',
+        duration: 1,
+        yoyo: true,
+        repeat: 5
+      });
+      
+      // Add more confetti
+      createConfetti();
+      
+      // Display birthday message
+      const message = document.createElement('div');
+      message.style.position = 'fixed';
+      message.style.top = '50%';
+      message.style.left = '50%';
+      message.style.transform = 'translate(-50%, -50%)';
+      message.style.fontSize = '5rem';
+      message.style.fontWeight = '800';
+      message.style.color = '#fff';
+      message.style.textShadow = '0 0 20px rgba(0,0,0,0.5)';
+      message.style.zIndex = '2000';
+      message.textContent = 'HAPPY BIRTHDAY DORA!';
+      document.body.appendChild(message);
+      
+      gsap.fromTo(message, 
+        { scale: 0, opacity: 0 },
+        { 
+          scale: 1, 
+          opacity: 1, 
+          duration: 1,
+          ease: 'elastic.out(1, 0.3)',
+          onComplete: () => {
+            setTimeout(() => {
+              gsap.to(message, {
+                opacity: 0,
+                duration: 1,
+                onComplete: () => message.remove()
+              });
+            }, 3000);
+          }
+        }
+      );
+      
+      // Clean up emoji rain after some time
+      setTimeout(() => {
+        emojiRain.style.display = 'none';
+      }, 8000);
+    };
+  </script>
+</body>
+</html>
